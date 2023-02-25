@@ -15,6 +15,50 @@ class xltool:
         self.sheet_name = 0
         self.file_exists()
             
+    def file_exists(self):
+        r = exists("/storage/emulated/0/Xltool/")
+        if not r:
+            os.mkdir("/storage/emulated/0/Xltool/")
+            
+    def file_inp(self, path=0):
+        
+        if path == 0:
+            path = input_c("[+] File Name      : ")
+        try:
+            self.book = openpyxl.load_workbook(path)
+            self.worksheets = len(self.book.worksheets)
+            self.path = path
+        
+        except FileNotFoundError:
+            red(f"[!] file not found : '{path}'")
+            if __name__ == "__main__":
+                quit()
+            self.file_inp()
+        except openpyxl.utils.exceptions.InvalidFileException:
+            red(f"[!] file not supported : '{path}'")
+            if __name__ == "__main__":
+                quit()
+            self.file_inp()
+            
+    def sheet_inp(self):
+        sheet_name = input_c("[+] Worksheet Name : ")
+        if sheet_name == "-s" or sheet_name == "_sheets_":
+            sheet_names = self.book.sheetnames
+            print("\033[1;32m[~] ",end="")
+            print(*sheet_names,end="",sep="\n[~] ")
+            print("\033[0m")
+        check_exit(sheet_name)
+            
+        try:
+            self.book[sheet_name]
+            return sheet_name
+        except KeyError:
+            if sheet_name != "-s":
+                print_er(f"worksheet not found : '{sheet_name}'")
+            if __name__ == "__main__":
+                quit()
+            self.sheet_inp()
+            
     def chk_sheet(self, sheet_name=0):
         
         if self.worksheets == 1:
@@ -28,6 +72,52 @@ class xltool:
             except KeyError:
                 if sheet_name != None:
                     red(f"worksheet not found : '{sheet_name}'")
+                
+    def content_to_dict(self):
+        
+        content_dict = {0:[col for col in range(1,len(self.sheet[1])+1)]}
+        max_len = 0
+        
+        for row in self.sheet:
+            row_dict[row[0].row] = []
+            for cell in row:
+                value = cell.value
+                if value == None:
+                    value = ""
+                if len(value) > max_len:
+                    max_len = len(value)
+                content_dict[cell.row].append(value)
+        return content_dict, max_len
+        
+    def headers(self):
+            
+        head_values = 0
+        head_row = 0
+        max_len = 0
+            
+        for row,values in row_dict.items():
+            if row == 0: continue
+            lst = []
+            for value in values:
+                if value != "":
+                    lst.append(value)
+            if len(lst) > max_len:
+                head_values = lst
+                head_row = row
+                max_len = len(lst)
+                    
+        print(*head_values,sep=",")
+        return head_values, head_row
+        
+    def save_file(self):
+
+        file_name = get_file_name(self.path)
+        path = "/storage/emulated/0/Xltool/"+file_name
+        self.book.save(path)
+        print("")
+        print_ln()
+        blue(f"[*] file Saved to : Xltool/{file_name}")
+        self.book.close()
                 
     def dupe_tool(self, delete=2, header=0):
         
@@ -72,81 +162,33 @@ class xltool:
         green("[~] Blank rows removed")
         if save:
             self.save_file()
-                
-    def save_file(self):
-
-        file_name = get_file_name(self.path)
-        path = "/storage/emulated/0/Xltool/"+file_name
-        self.book.save(path)
-        print("")
-        print_ln()
-        blue(f"[*] file Saved to : Xltool/{file_name}")
-        self.book.close()
             
-    def file_exists(self):
-        r = exists("/storage/emulated/0/Xltool/")
-        if not r:
-            os.mkdir("/storage/emulated/0/Xltool/")
-    
     def print_sheet(self,mode):
         
-        row_dict = {0:[col for col in range(1,len(self.sheet[1])+1)]}
-        max_length = 0
-        value_lst = []
-        
-        for row in self.sheet:
-            row_dict[row[0].row] = []
-            for cell in row:
-                value = cell.value
-                if value == None:
-                    value = ""
-                elif len(str(value)) > max_length:
-                    max_length = len(value)
-                row_dict[cell.row].append(value)
-        
-        def headers():
-            
-            head_values = 0
-            head_row = 0
-            max_len = 0
-            
-            for row,values in row_dict.items():
-                if row == 0: continue
-                lst = []
-                for value in values:
-                    if value != "":
-                        lst.append(value)
-                if len(lst) > max_len:
-                    head_values = lst
-                    head_row = row
-                    max_len = len(lst)
-                    
-            print(*head_values,sep=",")
-            return head_values, head_row
+        content_dict,max_len = self.content_to_dict()
         
         def lst():
-            for row,values in row_dict.items():
-                if row == 0:
-                    continue
+            for row,values in content_dict.items():
+                if row == 0: continue
                 for value in values:
-                    space = max_length-len(str(value))
+                    space = max_len-len(str(value))
                     print(f" {value} ",end=" "*space)
                 print()
         
         def table():
-            for row,values in row_dict.items():
+            for row,values in content_dict.items():
                 
                 space = len(str(max(row_dict.keys())))-len(str(row))
                 print(f" [ {row} ",end=" "*space)
                 for value in values:
-                    space = int(max_length)-int(len(str(value)))
+                    space = int(max_len)-int(len(str(value)))
                     if value == None:
                         value = ""
                     print(f"| {value}",end=" "*space)
                 print("]")
         def json():
             
-            head_values, head_row = headers()
+            head_values, head_row = self.headers()
             if head_values != 0:        
                 for row, values in row_dict.items():
                     if row == 0: continue
@@ -164,7 +206,6 @@ class xltool:
             "list": lst,
             "table": table,
             "json": json,
-            "headers": headers,
         }
         try:
             mode_dict[mode]()
@@ -172,44 +213,8 @@ class xltool:
             print_er(f"print mode not found : '{mode}'")
             raise
             
-    def file_inp(self, path=0):
-        
-        if path == 0:
-            path = input_c("[+] File Name      : ")
-        try:
-            self.book = openpyxl.load_workbook(path)
-            self.worksheets = len(self.book.worksheets)
-            self.path = path
-        
-        except FileNotFoundError:
-            red(f"[!] file not found : '{path}'")
-            if __name__ == "__main__":
-                quit()
-            self.file_inp()
-        except openpyxl.utils.exceptions.InvalidFileException:
-            red(f"[!] file not supported : '{path}'")
-            if __name__ == "__main__":
-                quit()
-            self.file_inp()
-       
-    def sheet_inp(self):
-        sheet_name = input_c("[+] Worksheet Name : ")
-        if sheet_name == "-s" or sheet_name == "_sheets_":
-            sheet_names = self.book.sheetnames
-            print("\033[1;32m[~] ",end="")
-            print(*sheet_names,end="",sep="\n[~] ")
-            print("\033[0m")
-        check_exit(sheet_name)
-            
-        try:
-            self.book[sheet_name]
-            return sheet_name
-        except KeyError:
-            if sheet_name != "-s":
-                print_er(f"worksheet not found : '{sheet_name}'")
-            if __name__ == "__main__":
-                quit()
-            self.sheet_inp()
+    def search(self):
+        pass
         
 if __name__ == "__main__":
      
