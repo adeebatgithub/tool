@@ -35,7 +35,7 @@ class dupe_tools():
         for row in self.sheet:
             cell = row[header_index]
             if cell.value in temp_dict.keys():
-                print(f"\033[1;32m[~] duplicates found : {cell.row} > {temp_dict[cell.value]}  [ {cell.value} ]\033[0m")
+                print(f"\033[1;32m[~] duplicates found : {temp_dict[cell.value]} > {cell.row}  [ {cell.value} ]\033[0m")
                 dupe_lst.append(cell.row)
             else:
                 if cell.value != None:

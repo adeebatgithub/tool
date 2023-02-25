@@ -137,15 +137,17 @@ def help_xltools():
     txt = '''
  Usage : xltools.py -wb [FILE_NAME] -s [SHEET_NAME] [OPTIONS]
 
- OPTIONS
+ OPTIONS AND PARAM
 -------------------------------------------
 
- -wb/ --workbook [WORKBOOK] : to set workbook
- -s/ --sheet [WORKSHEET]    : to set worksheet
- -dupe/ --duplicate         : for remove/find duplicates
- -rm-blank/ --removeblank  : for remove blank row
- -p/ --print [MODE]         : print sheet
-      MODES                 : json, table, list
+ -wb/ --workbook [WORKBOOK]    : set workbook
+ -s/ --sheet [WORKSHEET]       : set worksheet
+ --tool                        : 
+ -dupe/ --duplicate            : find duplicates
+ --rm-dupe/ --remove-duplicate : remove duplicates
+ -rm-blank/ --remove-blank     : remove blank rows
+ -p/ --print [MODE]            : print sheet
+   --> MODES                   : json, table, list
 
 -------------------------------------------
  tip :- use print option at last

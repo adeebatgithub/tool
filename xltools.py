@@ -12,6 +12,7 @@ class xltool:
         self.worksheets = 0
         self.sheet = 0
         self.path = 0
+        self.sheet_name = 0
         self.file_exists()
             
     def chk_sheet(self, sheet_name=0):
@@ -20,11 +21,10 @@ class xltool:
            self.sheet = self.book.active
         else:
             if sheet_name == 0:
-                sheet_names = self.book.sheetnames
-                green(f"Available sheets : {sheet_names}")
                 sheet_name = self.sheet_inp()
             try:
                 self.sheet = self.book[sheet_name]
+                self.sheet_name = sheet_name
             except KeyError:
                 if sheet_name != None:
                     red(f"worksheet not found : '{sheet_name}'")
@@ -175,7 +175,7 @@ class xltool:
     def file_inp(self, path=0):
         
         if path == 0:
-            path = input_c("[+] File Name : ")
+            path = input_c("[+] File Name      : ")
         try:
             self.book = openpyxl.load_workbook(path)
             self.worksheets = len(self.book.worksheets)
@@ -184,31 +184,82 @@ class xltool:
         except FileNotFoundError:
             red(f"[!] file not found : '{path}'")
             if __name__ == "__main__":
-                raise
+                quit()
             self.file_inp()
         except openpyxl.utils.exceptions.InvalidFileException:
             red(f"[!] file not supported : '{path}'")
             if __name__ == "__main__":
-                raise Error()
+                quit()
             self.file_inp()
        
     def sheet_inp(self):
         sheet_name = input_c("[+] Worksheet Name : ")
+        if sheet_name == "-s" or sheet_name == "_sheets_":
+            sheet_names = self.book.sheetnames
+            print("\033[1;32m[~] ",end="")
+            print(*sheet_names,end="",sep="\n[~] ")
+            print("\033[0m")
         check_exit(sheet_name)
             
         try:
             self.book[sheet_name]
             return sheet_name
         except KeyError:
-            print_er(f"worksheet not found : '{sheet_name}'")
+            if sheet_name != "-s":
+                print_er(f"worksheet not found : '{sheet_name}'")
+            if __name__ == "__main__":
+                quit()
             self.sheet_inp()
         
 if __name__ == "__main__":
      
-    toolbox = xltool()   
-    if "-h" in sys.argv or len(sys.argv) == 1 or "--help" in sys.argv:
+    toolbox = xltool()
+    
+    def dupe(delete=False, header=0):
+        print_ln()
+        print()
+        if "-y" in sys.argv:
+            delete = True
+        if "-n" in sys.argv:
+            delete = False
+        if "-h" in sys.argv:
+            header = sys.argv[sys.argv.index("-h")+1]
+        toolbox.dupe_tool(delete, header)               
+    
+    def rm_blnk():  
+        save = True   
+        if "-no" in sys.argv:     
+            save = False 
+        toolbox.rm_blnk(save=save)
+        
+    if len(sys.argv) == 1:
         help_xltools()
         quit()
+
+    if len(sys.argv) == 2:
+        if "-h" in sys.argv or "--help" in sys.argv:
+            help_xltools()
+            quit()
+        if "--tool" in sys.argv:
+            green("[======= XLTOOLS ======]")
+            print_ln()
+            print()
+            toolbox.file_inp()
+            toolbox.chk_sheet()
+            option_dict = {
+                    "1": dupe,
+                    "2": rm_blnk,
+                }
+            print()                               
+            blue("    [1] Remove Duplicates")      
+            blue("    [2] Remove blank rows")    
+            red("    [x] exit")                  
+            print("")                              
+            print_ln()
+            main_menu(option_dict)
+            print()
+            quit()
+            
     if "-wb" in sys.argv or "--workbook" in sys.argv:
         try:
             path = sys.argv[sys.argv.index("-wb")+1]
@@ -220,12 +271,7 @@ if __name__ == "__main__":
     else:
         help_xltools()
         quit()
-    try:
-        toolbox.file_inp(path=path)
-    except FileNotFoundError:
-        quit()
-    except Error:
-        quit()
+    toolbox.file_inp(path=path)
     if "-s" in sys.argv or "--sheet" in sys.argv:
         try:
             sheet_name = sys.argv[sys.argv.index("-s")+1]
@@ -249,27 +295,6 @@ if __name__ == "__main__":
     green(f"[*] Worksheet Name : {sheet_name}")
     
     toolbox.chk_sheet(sheet_name=sheet_name)
-    
-    def dupe():
-        
-        print_ln()
-        print()
-        delete = 2
-        header = 0
-        if "-y" in sys.argv:
-            delete = True
-        if "-n" in sys.argv:
-            delete = False
-        if "-header" in sys.argv:
-            header = sys.argv[sys.argv.index("-header")+1]
-        
-        toolbox.dupe_tool(delete, header)
-        
-    def rm_blnk():
-        save = True
-        if "-no" in sys.argv:
-            save = False
-        toolbox.rm_blnk(save=save)
         
     if len(sys.argv) == 5:
         print()
@@ -293,9 +318,11 @@ if __name__ == "__main__":
             
             
     if len(sys.argv) > 5:
-        if "-dupe" in sys.argv or "--duplicates" in sys.argv:
+        if "-dupe" in sys.argv or "--duplicate" in sys.argv:
             dupe()
-        if "-rm-blank" in sys.argv or "--removeblank" in sys.argv:
+        if "--rm-dupe" in sys.argv or "--remove-duplicate" in sys.argv:
+            dupe(delete=True)
+        if "--rm-blank" in sys.argv or "--removeblank" in sys.argv:
             rm_blnk()
         if "-p" in sys.argv or "--print" in sys.argv:
             try:
