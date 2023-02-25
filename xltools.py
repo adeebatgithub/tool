@@ -79,23 +79,24 @@ class xltool:
         max_len = 0
         
         for row in self.sheet:
-            row_dict[row[0].row] = []
+            content_dict[row[0].row] = []
             for cell in row:
                 value = cell.value
                 if value == None:
                     value = ""
-                if len(value) > max_len:
+                if len(str(value)) > max_len:
                     max_len = len(value)
                 content_dict[cell.row].append(value)
         return content_dict, max_len
         
     def headers(self):
-            
+        
+        content_dict,temp = self.content_to_dict()    
         head_values = 0
         head_row = 0
         max_len = 0
             
-        for row,values in row_dict.items():
+        for row,values in content_dict.items():
             if row == 0: continue
             lst = []
             for value in values:
@@ -106,7 +107,6 @@ class xltool:
                 head_row = row
                 max_len = len(lst)
                     
-        print(*head_values,sep=",")
         return head_values, head_row
         
     def save_file(self):
@@ -178,7 +178,7 @@ class xltool:
         def table():
             for row,values in content_dict.items():
                 
-                space = len(str(max(row_dict.keys())))-len(str(row))
+                space = len(str(max(content_dict.keys())))-len(str(row))
                 print(f" [ {row} ",end=" "*space)
                 for value in values:
                     space = int(max_len)-int(len(str(value)))
@@ -190,7 +190,7 @@ class xltool:
             
             head_values, head_row = self.headers()
             if head_values != 0:        
-                for row, values in row_dict.items():
+                for row, values in content_dict.items():
                     if row == 0: continue
                     if row == head_row: continue
                     print("{ row: "+str(row),end=", ")
@@ -213,8 +213,36 @@ class xltool:
             print_er(f"print mode not found : '{mode}'")
             raise
             
-    def search(self):
-        pass
+    def search(self, search_txt, header=0):
+        content_dict, temp = self.content_to_dict()
+        head_values,head_row = self.headers()
+        count = 0
+        if header == 0:
+            for row, values in content_dict.items():
+                for value in values:
+                    if str(value) == search_txt:
+                        count += 1
+                        print("{ row: "+str(row),end=", ")
+                        for head, value in zip(head_values, values):
+                            if head == "": continue
+                            print("\033[0;33m"+str(head)+"\033[0m: "+str(value).strip(),end=", ")
+                        print("}")
+                            
+        else:
+            head_index = head_values.index(header)
+            for row, values in content_dict.items():
+                if str(values[head_index]) == search_txt:
+                    count += 1
+                    print("{ row: "+str(row),end=", ")
+                    for head, value in zip(head_values, values):
+                        if head == "": continue
+                        print("\033[0;33m"+str(head)+"\033[0m :"+str(value).strip(),end=", ")
+                    print("}")
+        if count == 0:
+            green("No match found")
+        else:
+            print()
+            blue(f"{count} match found")
         
 if __name__ == "__main__":
      
@@ -294,7 +322,8 @@ if __name__ == "__main__":
         quit()
     print()
     
-    green(" [====== XLTOOLS ======]")
+    green("[====== XLTOOLS ======]")
+    print()
     print_ln()
     green(f"[*] Workbook Name : {get_file_name(path)}")
     green(f"[*] Worksheet Name : {sheet_name}")
@@ -348,6 +377,31 @@ if __name__ == "__main__":
                 quit()
             print()
             print_ln()
-    
+        if "--print-headers" in sys.argv or "-ph" in sys.argv:
+            values,row = toolbox.headers()
+            print_ln()
+            print("\033[1;32mAvailable headers : \033[0m",end="")
+            print(" ",end="")
+            print(*values)
+        if "--search" in sys.argv or "-sh" in sys.argv:
+            try:
+                txt = sys.argv[sys.argv.index("-sh")+1]
+            except ValueError:
+                txt = sys.argv[sys.argv.index("--search")+1]
+            except IndexError:
+                print_er("search value not provided")
+                quit()
+            txt_lst = txt.split(",")
+            header = 0
+            if "-h" in sys.argv:
+                header = sys.argv[sys.argv.index("-h")+1]
+            print_ln()
+            print()
+            for txt in txt_lst:
+                print()
+                blue(f"search result for : {txt}")
+                print()
+                toolbox.search(txt,header=header)
+            print_ln()
     
     
