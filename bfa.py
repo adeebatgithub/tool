@@ -62,20 +62,7 @@ def get_file_name(path):
         return path.split("/")[-1]
     return path
         
-def end_menu(func_1, func_0):
-    inp = input_c("[=] select : ")
-    check_exit(inp)
-    options_dict = {
-        "1": func_1,
-        "0": func_0,
-    }
-    try:
-        options_dict[inp]()
-    except KeyError:
-        red(f"[!] option not found : '{inp}'")
-        end_menu(func_1, func_0)
-        
-def main_menu(options_dict, banner_dict=0):
+def menu(options_dict, banner_dict=0):
     
     inp = input_c("[=] Select : ")
     check_exit(inp)
@@ -85,7 +72,7 @@ def main_menu(options_dict, banner_dict=0):
         options_dict[inp]()
     except KeyError:
         red(f"[!] option not found : '{inp}'")
-        main_menu(options_dict)
+        menu(options_dict)
 
 #####################################
 

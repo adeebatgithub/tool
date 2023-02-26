@@ -8,11 +8,6 @@ class xltool:
     
     def __init__(self):
         
-        self.book = 0
-        self.worksheets = 0
-        self.sheet = 0
-        self.path = 0
-        self.sheet_name = 0
         self.file_exists()
             
     def file_exists(self):
@@ -37,11 +32,14 @@ class xltool:
         except openpyxl.utils.exceptions.InvalidFileException:
             red(f"[!] file not supported : '{path}'")
             if __name__ == "__main__":
+                red("exiting...")
                 quit()
             self.file_inp()
             
-    def sheet_inp(self):
-        sheet_name = input_c("[+] Worksheet Name : ")
+    def sheet_inp(self, sheet_name=0):
+        
+        if sheet_name == 0:
+            sheet_name = input_c("[+] Worksheet Name : ")
         if sheet_name == "-s" or sheet_name == "_sheets_":
             sheet_names = self.book.sheetnames
             print("\033[1;32m[~] ",end="")
@@ -50,29 +48,16 @@ class xltool:
         check_exit(sheet_name)
             
         try:
-            self.book[sheet_name]
-            return sheet_name
+            self.sheet = self.book[sheet_name]
+            self.sheet_name = sheet_name
         except KeyError:
             if sheet_name != "-s":
                 print_er(f"worksheet not found : '{sheet_name}'")
             if __name__ == "__main__":
+                red("exiting...")
                 quit()
             self.sheet_inp()
             
-    def chk_sheet(self, sheet_name=0):
-        
-        if self.worksheets == 1:
-           self.sheet = self.book.active
-        else:
-            if sheet_name == 0:
-                sheet_name = self.sheet_inp()
-            try:
-                self.sheet = self.book[sheet_name]
-                self.sheet_name = sheet_name
-            except KeyError:
-                if sheet_name != None:
-                    red(f"worksheet not found : '{sheet_name}'")
-                
     def content_to_dict(self):
         
         content_dict = {0:[col for col in range(1,len(self.sheet[1])+1)]}
@@ -122,12 +107,16 @@ class xltool:
     def dupe_tool(self, delete=2, header=0):
         
         tool = dupe_tools(self.sheet)
-        green("[~] checking for duplicates...")
+        blue("[~] checking for duplicates...")
+        print()
         if header == 0:
             dupe_lst = tool.full_row()
         else:
             dupe_lst = tool.by_header(header)
         if len(dupe_lst) != 0:
+            print()
+            blue(f"[~] {len(dupe_lst)} duplicates found")
+            print_ln()
             if delete == 2:
                 delete = yn_trufls("do you want to delete the row")
                 
@@ -213,10 +202,28 @@ class xltool:
             print_er(f"print mode not found : '{mode}'")
             raise
             
-    def search(self, search_txt, header=0):
+    def search_inp(self):
+        
+        values, row = self.headers()
+        header = input_c("[+] heading : ")
+        if header in values:
+            txt = input_c("[+] Text    : ")
+            self.search_ht = header, txt
+        else:
+            print_er(f"heading not found : {header}")
+            if __name__ == "__main__":
+                red("exiting...")
+                quit()
+            self.search_inp()
+            
+    def search(self, search_txt=0, header=0):
         content_dict, temp = self.content_to_dict()
         head_values,head_row = self.headers()
         count = 0
+        if search_txt == 0:
+            self.search_inp()
+            header, search_txt = self.search_ht
+            print()
         if header == 0:
             for row, values in content_dict.items():
                 for value in values:
@@ -238,6 +245,7 @@ class xltool:
                         if head == "": continue
                         print("\033[0;33m"+str(head)+"\033[0m :"+str(value).strip(),end=", ")
                     print("}")
+                    
         if count == 0:
             green("No match found")
         else:
@@ -305,6 +313,7 @@ if __name__ == "__main__":
         help_xltools()
         quit()
     toolbox.file_inp(path=path)
+    
     if "-s" in sys.argv or "--sheet" in sys.argv:
         try:
             sheet_name = sys.argv[sys.argv.index("-s")+1]
@@ -320,15 +329,14 @@ if __name__ == "__main__":
     else:
         print_er("Worksheet not provided")
         quit()
-    print()
+    toolbox.sheet_inp(sheet_name=sheet_name)
     
+    print()
     green("[====== XLTOOLS ======]")
     print()
     print_ln()
     green(f"[*] Workbook Name : {get_file_name(path)}")
     green(f"[*] Worksheet Name : {sheet_name}")
-    
-    toolbox.chk_sheet(sheet_name=sheet_name)
         
     if len(sys.argv) == 5:
         print()

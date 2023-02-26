@@ -23,13 +23,14 @@ def downloader():
     print("")
     print_ln()
     print("")
-    end_menu(downloader, main)
+    
+    menu({"1":downloader,"0":main})
         
 def xltool_func():
     print("")
     toolbox = xltool()
     toolbox.file_inp()
-    toolbox.chk_sheet()
+    toolbox.sheet_inp()
     def dupe():
         print("")
         print_ln()
@@ -42,28 +43,47 @@ def xltool_func():
         print("")
         toolbox.rm_blnk()
         
-    options_dict = {
-        "1": dupe,
-        "2": rm_blnk,
-    }    
-    print("")    
-    blue("    [1] Remove duplicates")
-    blue("    [2] Remove blank rows")
-    red("    [x] exit")
-    print("")
-    print_ln()
-    main_menu(options_dict)
-            
-    print("")
-    print_ln()
-    green(' [1] Back to Xltools ')
-    green(' [0] Back to Tools ')
-    red(" [x] exit ")
-    print("")
-    print_ln()
-    print("")
+    def search():
+        print()
+        print_ln()
+        print()
+        toolbox.search()
     
-    end_menu(xltool_func, main)
+    def main_menu():    
+        main_options_dict = {
+            "1": dupe,
+            "2": rm_blnk,
+            "3": search,
+        }
+        print("")    
+        blue("    [1] Remove duplicates")
+        blue("    [2] Remove blank rows")
+        blue("    [3] Search ")
+        red("    [x] exit")
+        print("")
+        print_ln()
+        menu(main_options_dict)
+    
+    def end_menu():
+        end_options_dict = {
+            "1": main_menu,
+            "2": xltool_func,
+            "0": main,
+        }
+        print("")
+        print_ln()
+        green(' [1] Back ')
+        green(' [2] Back to Xltools ')
+        green(' [0] Back to Tools ')
+        red(" [x] exit ")
+        print("")
+        print_ln()
+        print("")
+        menu(end_options_dict)
+        end_menu()
+        
+    main_menu()
+    end_menu()
 
 def main():
     main_banner()
@@ -81,7 +101,7 @@ def main():
         "1": yt_banner,
         "2": xltool_banner,
     }
-    main_menu(options_dict, banner_dict=banner_dict)
+    menu(options_dict, banner_dict=banner_dict)
 
 ###################################################
 
