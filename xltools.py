@@ -104,13 +104,16 @@ class xltool:
         blue(f"[*] file Saved to : Xltool/{file_name}")
         self.book.close()
                 
-    def dupe_tool(self, delete=2, header=0):
+    def dupe_tool(self, delete=2, header=0, col=0):
         
         tool = dupe_tools(self.sheet)
         blue("[~] checking for duplicates...")
         print()
         if header == 0:
-            dupe_lst = tool.full_row()
+            if col == 0:
+                dupe_lst = tool.full_row()
+            else:
+                dupe_lst = tool.by_col(col)
         else:
             dupe_lst = tool.by_header(header)
         if len(dupe_lst) != 0:
@@ -204,59 +207,71 @@ class xltool:
             
     def search_inp(self):
         
-        values, row = self.headers()
-        header = input_c("[+] heading : ")
-        if header in values:
-            txt = input_c("[+] Text    : ")
-            self.search_ht = header, txt
-        else:
-            print_er(f"heading not found : {header}")
-            if __name__ == "__main__":
-                red("exiting...")
-                quit()
-            self.search_inp()
+        col = input_c("[+] Column : ")
+        txt = input_c("[+] Text    : ")
+        self.search_ht = col, txt
             
-    def search(self, search_txt=0, header=0):
+    def search(self, search_txt=0, header=0, col=0):
         content_dict, temp = self.content_to_dict()
         head_values,head_row = self.headers()
-        count = 0
         if search_txt == 0:
-            self.search_inp()
-            header, search_txt = self.search_ht
+            col = input_c("[+] Column : ")
+            search_txt = input_c("[+] Text   : ")
             print()
-        if header == 0:
-            for row, values in content_dict.items():
-                for value in values:
-                    if str(value) == search_txt:
+        for txt in search_txt.split(","):
+            blue(f"[~] Search result for : {txt}")
+            print()
+            count = 0
+            if header == 0 and col == 0:
+                for row, values in content_dict.items():
+                    for value in values:
+                        if str(value) == txt:
+                            count += 1
+                            print("{ row: "+str(row),end=", ")
+                            for head, value in zip(head_values, values):
+                                if head == "": continue
+                                print("\033[0;33m"+str(head)+"\033[0m: "+str(value).strip(),end=", ")
+                            print("}")
+                                
+            if header != 0 and col == 0:
+                head_index = head_values.index(header)
+                for row, values in content_dict.items():
+                    if str(values[head_index]) == txt:
                         count += 1
                         print("{ row: "+str(row),end=", ")
                         for head, value in zip(head_values, values):
                             if head == "": continue
-                            print("\033[0;33m"+str(head)+"\033[0m: "+str(value).strip(),end=", ")
+                            print("\033[0;33m"+str(head)+"\033[0m :"+str(value).strip(),end=", ")
                         print("}")
+                        
+            if col != 0 and header == 0:
+                
+                for row in self.sheet:
+                    for cell in row:
+                        if col.upper() not in cell.coordinate:
+                            continue
+                        if cell.value == None: continue
+                        if str(cell.value) == txt:
+                            count += 1
+                            values = [cell.value for cell in self.sheet[cell.row]]
                             
-        else:
-            head_index = head_values.index(header)
-            for row, values in content_dict.items():
-                if str(values[head_index]) == search_txt:
-                    count += 1
-                    print("{ row: "+str(row),end=", ")
-                    for head, value in zip(head_values, values):
-                        if head == "": continue
-                        print("\033[0;33m"+str(head)+"\033[0m :"+str(value).strip(),end=", ")
-                    print("}")
+                            print("{ row: "+str(row[0].row),end=", ")
+                            for head, value in zip(head_values, values):
+                                if head == "": continue
+                                print("\033[0;33m"+str(head)+"\033[0m: "+str(value).strip(),end=", ")
+                            print("}")
                     
-        if count == 0:
-            green("No match found")
-        else:
-            print()
-            blue(f"{count} match found")
+            if count == 0:
+                blue("[!] No match found")
+            else:
+                print()
+                blue(f"[~] {count} match found")
         
 if __name__ == "__main__":
      
     toolbox = xltool()
     
-    def dupe(delete=False, header=0):
+    def dupe(delete=False, header=0, col=0):
         print_ln()
         print()
         if "-y" in sys.argv:
@@ -265,7 +280,10 @@ if __name__ == "__main__":
             delete = False
         if "-h" in sys.argv:
             header = sys.argv[sys.argv.index("-h")+1]
-        toolbox.dupe_tool(delete, header)               
+        if "-c" in sys.argv:
+            col = sys.argv[sys.argv.index("-c")+1]
+        
+        toolbox.dupe_tool(delete, header, col)               
     
     def rm_blnk():  
         save = True   
@@ -403,13 +421,11 @@ if __name__ == "__main__":
             header = 0
             if "-h" in sys.argv:
                 header = sys.argv[sys.argv.index("-h")+1]
+            col = 0
+            if "-c" in sys.argv:
+                col = sys.argv[sys.argv.index("-c")+1]
             print_ln()
-            print()
-            for txt in txt_lst:
-                print()
-                blue(f"search result for : {txt}")
-                print()
-                toolbox.search(txt,header=header)
+            toolbox.search(txt,col=col,header=header)
             print_ln()
     
     

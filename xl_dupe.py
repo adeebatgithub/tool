@@ -42,3 +42,19 @@ class dupe_tools():
                     temp_dict[cell.value] = cell.row
                     
         return dupe_lst
+        
+    def by_col(self, col):
+        
+        dupe_lst = []
+        temp_dict = {}
+        
+        for row in self.sheet:
+            for cell in row:
+                if col.upper() in cell.coordinate:
+                    if cell.value in temp_dict.keys():
+                        print(f"\033[1;32m[~] duplicates found : {temp_dict[cell.value]} > {cell.row}  [ {cell.value} ]\033[0m")
+                        dupe_lst.append(cell.row)
+                    else:
+                        temp_dict[cell.value] = cell.row
+        return dupe_lst
+        

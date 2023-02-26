@@ -14,6 +14,8 @@ class color:
 
 def print_ln():
     print(f"{color.yellow}={color.noc}"*56)
+def print_dln():
+    print(f"{color.yellow}-{color.noc}"*56)
 def print_er(e):
     print(f"{color.red}[!] Error : {e} {color.noc}")
 def red(txt):
@@ -72,7 +74,7 @@ def menu(options_dict, banner_dict=0):
         options_dict[inp]()
     except KeyError:
         red(f"[!] option not found : '{inp}'")
-        menu(options_dict)
+        menu(options_dict, banner_dict)
 
 #####################################
 
