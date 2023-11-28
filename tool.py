@@ -1,110 +1,150 @@
 ###################################################
 # TOOLS
 # Author      : Adeeb
-# Version     : 1.0
+# Version     : 2.0
 # Description : some usefull tools
 ###################################################
 
 import os
-from bfa import *
-from Youtuber import YTD
-from xltools import xltool
+from pyfiglet import figlet_format
 
-def downloader():
-    print()
-    ytd_obj = YTD()
-    print()
-    aud = yn_trufls("Download audio only")
-    check_exit(aud)
-    ytd_obj.download(aud)
-    
-    green(' [1] Download again ')
-    green(' [0] Back to Tools')
-    print("")
-    print_ln()
-    print("")
-    
-    menu({"1":downloader,"0":main})
+from util import locio, color
+from Youtuber import youtuber
+from Xltool import xltool
         
-def xltool_func():
-    print("")
-    toolbox = xltool()
-    toolbox.file_inp()
-    toolbox.sheet_inp()
-    def dupe():
+        
+class banners:
+    
+    def tool_bnr():
+        
+        head = figlet_format("TOOLS".center(31))
+    
+        locio.clear()
+        locio.print_ln()
+        locio.print_ln()
         print("")
-        print_ln()
+        print(f"{color.red}{head}{color.noc}")
+        locio.print_ln()
+        print("  version : 2.0",end="")
+        print("By : Adeeb".rjust(39))
+        locio.print_ln()
         print("")
-        toolbox.dupe_tool()
+        
+    def youtuber_bnr():
+        
+        txt = figlet_format("YOUTUBER".center(16))
+        
+        locio.clear()
+        locio.print_ln()
+        locio.print_ln()
+        print(f"{color.red}{txt}{color.noc}")
+        locio.print_ln()
+        locio.print_ln()
+        print()
+        
+    def xltool_bnr():
+    
+        txt = figlet_format("XLTOOLS".center(24))
+        locio.clear()
+        locio.print_ln()
+        locio.print_ln()
+        print("")
+        locio.red(f"{txt}")
+        locio.print_ln()
+        locio.print_ln()
+        print()
+
+
+
+class tool(banners, youtuber, xltool):
+    
+    def __init__(self):
+        
+        youtuber.__init__(self)
+        xltool.__init__(self)
+        
+        banners.tool_bnr()
+        
+    def downloader(self):
+        
+        banners.youtuber_bnr()
+        
+        url = locio.input_c("URL: ")
+        
+        youtuber.url_inp(self, url)
+        
+        tags = youtuber.get_res(self, False)
+        
+        print(f"{color.yellow}Available resolution : ",*tags)
+        
+        res = locio.input_c("Resolution: ")
+        tag = tags[res]
+        
+        youtuber.download(self,tag)
+        
+    def xl(self):
+        
+        banners.xltool_bnr()
+        
+        path = locio.input_c("path or file name: ")
+        
+        if len(path) == 0:
             
-    def rm_blnk():
-        print("")
-        print_ln()
-        print("")
-        toolbox.rm_blnk()
+            quit()
         
-    def search():
-        print()
-        print_ln()
-        print()
-        toolbox.search()
-    
-    def main_menu():    
-        main_options_dict = {
-            "1": dupe,
-            "2": rm_blnk,
-            "3": search,
-        }
-        print("")    
-        blue("    [1] Remove duplicates")
-        blue("    [2] Remove blank rows")
-        blue("    [3] Search ")
-        red("    [x] exit")
-        print("")
-        print_ln()
-        menu(main_options_dict)
-    
-    def end_menu():
-        end_options_dict = {
-            "1": main_menu,
-            "2": xltool_func,
-            "0": main,
-        }
-        print("")
-        print_ln()
-        green(' [1] Back ')
-        green(' [2] Back to Xltools ')
-        green(' [0] Back to Tools ')
-        red(" [x] exit ")
-        print("")
-        print_ln()
-        print("")
-        menu(end_options_dict)
-        end_menu()
+        xltool.file_inp(self, path)
         
-    main_menu()
-    end_menu()
+        xltool.get_sheet_name(self)
+        
+        sheet = locio.input_c("sheet name: ")
+        
+        xltool.sheet_inp(self, sheet)
+        
+        print()
+        print(" [1] search")
+        print(" [x] exit")
+        print()
+        inp = locio.input_c(" select: ")
+        
+        if inp == "x":
+            quit()
+            
+        options = {
+            "1": xltool.find,
+        }
+        if inp in options:
+            
+            options[inp](self)
+            
+        else:
+            
+            locio.print_er("Option not found")
+        
+    def __call__(self):
+        
+        print(" [1] youtube video downloader")
+        print(" [2] excel tools")
+        print(" [x] exit")
+        print()
+        inp = locio.input_c(" select: ")
+        
+        options = {
+            "x": quit,
+            "1": self.downloader,
+            "2": self.xl
+        }
+        if inp in options:
+            
+            options[inp]()
+            
+        else:
+            
+            locio.print_er("Option not found")
 
-def main():
-    main_banner()
-
-    blue(f'    [1] Youtube video downloader')
-    blue(f'    [2] Xltools')
-    red(f'    [x] Exit ')
-    print("")
-    print_ln()
-    options_dict = {
-        "1": downloader,
-        "2": xltool_func,
-    }
-    banner_dict = {
-        "1": yt_banner,
-        "2": xltool_banner,
-    }
-    menu(options_dict, banner_dict=banner_dict)
 
 ###################################################
 
 if __name__ == "__main__":
     
-    main()
+    toolbox = tool()
+    toolbox()

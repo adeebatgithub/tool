@@ -1,31 +1,35 @@
+###################################################
+# YOUTUBER
+# Author       : Adeebdanish
+# version      : 1.0
+# Description  : Youtube video downloader
+###################################################
+
 from pytube import YouTube as yt
-import sys
-from bfa import *
+import sys, os
 from os.path import exists
 
-class YTD:
+from util import locio
 
+
+class youtuber:
+    
     def __init__(self):
-
-        self.video = ""
-        self.stream = ""
-        self.tags = {}
-        self.path = self.get_path()
-
-    def available_res(self, aud):
-        self.tags = {}
-        filtered_stream = self.stream.filter(
-            progressive = True,
-        ).order_by('resolution')
-        if aud:
-            for stream in self.stream:
-                if stream.type == 'audio':
-                    self.tags[stream.abr] = stream.itag
-        else:
-            for stream in filtered_stream:
-                if stream.type == 'video':
-                    self.tags[stream.resolution] = stream.itag
-
+        
+        
+        if sys.platform == "linux":
+            
+            self.path = "/storage/emulated/0/Youtuber/"
+     
+            r = exists(self.path)
+            if not r:
+                os.mkdir(self.path)
+                
+        if "win" in sys.platform:
+            
+            self.path = ""
+            
+    
     def display_progress_bar(
             self, bytes_received, filesize, ch: str = "█", scale: float = 0.55
     ):
@@ -37,7 +41,7 @@ class YTD:
         remaining = max_width - filled
         progress_bar = ch * filled + " " * remaining
         percent = round(100.0 * bytes_received / float(filesize), 1)
-        text = f" downloading: |{progress_bar}| {percent}% | {round((bytes_received / 1024) / 1024, 2)} MiB\t\r"
+        text = f"downloading: |{progress_bar}| {percent}% | {round((bytes_received / 1024) / 1024, 2)} MiB\t\r"
         sys.stdout.write(text)
         sys.stdout.flush()
         # print(text)
@@ -51,120 +55,152 @@ class YTD:
         bytes_received = self.file_size - bytes_remaining
         self.display_progress_bar(
             bytes_received, self.file_size)
-
-    def download(
-        self,aud=False, res=0, url=0
-    ):
-
-        self.url_inp(url=url)
-        self.available_res(aud)
-
-        if aud:
-            res = max(self.tags.keys())
-            file = "Audio"
-        if not aud:
-            file = "Video"
-            if res == 0:
-                res = self.res_inp()
-        tag = self.tags[res]
-        self.set_res = self.stream.get_by_itag(tag)
-        file_name = self.chk_file_name()+"."+self.set_res.subtype
-        print()
-        print_ln()
-        green(f"[+] {file} : {file_name}")
-        print_ln()
-        print()
-        is_exists = self.chk_file_exists(file_name)
-        if not is_exists:
-            self.set_res.download(self.path)
-            print("\n")
-            print_ln()
-            green(" [*] download to : Youtuber")
-            print_ln()
-            print()
-
-    def get_path(self):
-        if sys.platform == "linux":
-            return '/storage/emulated/0/Youtuber'
-        if "win" in sys.platform:
-            return ""
             
-    def chk_file_exists(self, name):
-        
-        path = self.path+"/"+name
-        is_exists = exists(path)
-        if is_exists:
-            red("[!] Already downloaded")
-            red(f"[*] At : {path}")
-            print()
-            return True
-        else:
-            return False 
-            
-    def chk_file_name(self):
-        
-        file_name = self.video.title.replace("|","").replace(".","").replace(":","").replace("'","").replace("#","")
-        return file_name
-            
-    def res_inp(self):
-        green(f"[*] Available Resolutions : {list(self.tags.keys())}")
-        res = input_c('[+] Resolution : ')
-        try:
-            self.tags[res]
-            return res
-        except KeyError:
-            print_er(f"Resolution not available  : '{res}'")
-            self.res_inp()
-        
-    def url_inp(self, url=0):
+    def url_inp(self, url):
     
-        if url == 0:
-            url = input_c("[+] URL : ")
-            check_exit(url)
         count = 0
-        print("")
-        yellow("[*] checking URL...")
         if 'https://youtu.be/' in url:
             count = 1
         if "https://youtube.com/" in url:
             count = 1
     
-        if count == 1:
+        if count == 0:
+            
+            print(f"[!] Not a youtube url or url is carrupted : '{url}' ")
+    
+        else:
+            
             try:
+                print("[~] checking url...")
                 self.video = yt(
                     url,
                     on_progress_callback=self.on_progress
                 )
                 self.stream = self.video.streams
             except:
-                count = 0
+                print("[!] something went wrong")
+                
+    def get_res(self, aud):
+        
+        tags = {}
+        
+        filtered_stream = self.stream.filter(
+            progressive = True,
+        ).order_by('resolution')
+        
+        if aud:
+            
+            for stream in self.stream:
+                if stream.type == 'audio':
+                    tags[stream.abr] = stream.itag
+        
+        else:
+            
+            for stream in filtered_stream:
+                if stream.type == 'video':
+                    tags[stream.resolution] = stream.itag
+        
+        return tags
+                
+    def get_file_name(self):
+        
+        file_name = self.video.title.replace("|","").replace(".","").replace(":","").replace("'","").replace("#","")
+        return file_name
+                
+    def download(self, tag):
+        
+        self.set_res = self.stream.get_by_itag(tag)
+        file_name = self.get_file_name()+"."+self.set_res.subtype
+        print()
+        locio.print_dln()
+        print(f"[+] Video : {file_name}")
+        locio.print_dln()
+        print()
+        self.set_res.download(self.path)
+        if self.path == "":
+            self.path = os.getcwd()
+        locio.print_dln()
+        print()
+        print(f"\n[*] downloaded to : Youtuber")
+        print()
+                
+
+def yt_hlp():
+    hlp_txt = '''
+ Usage : Youtuber.py -u [URL] -r [RESOLUTION] [OPTIONS]
+
+ OPTIONS
+-------------------------------------
+
+  -u    : set url
+  -aud  : download audio only
+  -r    : set download resolution
+        : A - Show available resolutions
+
+-------------------------------------
+
+'''
+    print(hlp_txt)
+
+
+if __name__ == "__main__":
     
-        if count == 0:
-            red(f"[!] Not a youtube url or url is carrupted : '{url}' ")
-            self.url_inp()
-
-if __name__ == '__main__':
-
-    if "-h" in sys.argv or len(sys.argv) == 1:
+    ytd = youtuber()
+    
+    argv = sys.argv
+    
+    if len(argv) < 2:
+        
         yt_hlp()
         quit()
-    if "-u" in sys.argv:
-        url = sys.argv[sys.argv.index("-u")+1]
-    elif "--url" in sys.argv:
-        url = sys.argv[sys.argv.index("--url")+1]
-    else:
-        print_er("URL is not provided")
-        quit()
-    green(" [====== Youtuber ======]")
-    print_ln()
-    downloader = YTD()
     
-    if len(sys.argv) == 3:
-        aud = yn_trufls("Download audio only")
-        downloader.download(aud=aud,url=url)
-    if len(sys.argv) > 3:
-        if "-aud" in sys.argv:
-            aud = True
-        if "-res" in sys.argv:
-            res = sys.argv[sys.argv.index("-res")+1]
-        downloader.download(aud=aud,res=res,url=url)
+    if len(argv) == 2:
+        
+        if "-h" in argv:
+            
+            yt_hlp()
+            quit()
+    
+    if "-u" in argv:
+        
+        url = argv[argv.index("-u")+1]
+        
+    else:
+        
+        print("[!] url not provided ")
+        quit()
+        
+    ytd.url_inp(url)
+    
+    if "-aud" in argv:
+        
+        tags = ytd.get_res(True)
+        print(tags)
+        tag = tags[max(tags)]
+    
+    if "-r" in argv:
+        
+        res = argv[argv.index("-r")+1]
+        tags = ytd.get_res(False)
+        
+        if res == "A":
+        
+            print("[~] Available resolution : ", *tags)
+            quit()
+            
+        if res not in tags:
+            
+            print("[!] resolution not found")
+            quit()
+            
+        tag = tags[res]
+        
+    else:
+        
+        if "-aud" not in argv:
+            print("[!] resolution is not provided ")
+            quit()
+        
+    ytd.download(tag)
+        
+        
