@@ -9,7 +9,7 @@ import os
 from pyfiglet import figlet_format
 
 from util import locio, color
-from Youtuber import youtuber
+from Youtuber import YouTuber
 from Xltool import xltool
         
         
@@ -56,11 +56,11 @@ class banners:
 
 
 
-class tool(banners, youtuber, xltool):
+class tool(banners, YouTuber, xltool):
     
     def __init__(self):
         
-        youtuber.__init__(self)
+        YouTuber.__init__(self)
         xltool.__init__(self)
         
         banners.tool_bnr()
@@ -71,16 +71,16 @@ class tool(banners, youtuber, xltool):
         
         url = locio.input_c("URL: ")
         
-        youtuber.url_inp(self, url)
+        YouTuber.url_inp(self, url)
         
-        tags = youtuber.get_res(self, False)
+        tags = YouTuber.get_res(self, False)
         
         print(f"{color.yellow}Available resolution : ",*tags)
         
         res = locio.input_c("Resolution: ")
         tag = tags[res]
         
-        youtuber.download(self,tag)
+        YouTuber.download(self, tag)
         
     def xl(self):
         
