@@ -44,16 +44,15 @@ class locio:
     def input_c(txt: str):
 
         try:
-
             inp = input(f"{color.green}{txt}{color.noc}")
         except KeyboardInterrupt:
-
             print()
             quit()
 
         return inp
 
     def clear():
+
         if sys.platform == "linux":
             os.system("clear")
         if "win" in sys.platform:

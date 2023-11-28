@@ -5,11 +5,12 @@
 # Description  : YouTube video downloader
 ###################################################
 
-from pytube import YouTube
-import sys
 import os
 import re
+import sys
 from os.path import exists
+
+from pytube import YouTube
 
 from util import locio
 
@@ -60,8 +61,8 @@ class YouTuber:
     def check_url(url: str):
 
         youtube_pattern = (
-            r'(https?://)?(www\.)?'
-            '(youtube|youtu|youtube-nocookie)\.(com|be)/')
+            r"(https?://)?(www\.)?"
+            "(youtube|youtu|youtube-nocookie)\.(com|be)/")
         youtube_regex = re.compile(youtube_pattern)
         match = youtube_regex.match(url)
 
@@ -185,4 +186,4 @@ if __name__ == "__main__":
 
     print(f"[*] downloading: {ytd.get_title()}")
     ytd.download(tag)
-    print("[*] downloaded")
+    print("\n[*] downloaded")
