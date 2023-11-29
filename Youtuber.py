@@ -17,19 +17,8 @@ from util import locio
 
 class YouTuber:
     aud = False
-
-    def __init__(self):
-
-        if sys.platform == "linux":
-
-            self.path = "/storage/emulated/0/Youtuber/"
-
-            r = exists(self.path)
-            if not r:
-                os.mkdir(self.path)
-
-        if "win" in sys.platform:
-            self.path = ""
+    path = "downloads"
+    progress_bar = True
 
     @staticmethod
     def display_progress_bar(
@@ -68,11 +57,18 @@ class YouTuber:
 
         return bool(match)
 
+    def get_progess_bar(self):
+
+        if self.progress_bar:
+            return self.on_progress
+        return None
+
     def get_video(self, url: str):
 
+        on_progress_callback = self.get_progess_bar()
         self.video = YouTube(
             url,
-            on_progress_callback=self.on_progress
+            on_progress_callback = on_progress_callback
         )
         self.streams = self.video.streams
 
