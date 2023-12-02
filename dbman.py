@@ -9,6 +9,7 @@ import os
 import sqlite3
 
 
+# Exception handling
 class TableNotFound(Exception):
     pass
 
@@ -20,13 +21,11 @@ class ColNotFound(Exception):
 class DBInit:
     db_path: str = "database.db"
     table_name: str = None
-    table_names: list = None
 
     def __init__(self):
         if self.db_path is not None:
             self.check_db_path()
 
-        self.db = sqlite3.connect(self.db_path)
         if self.table_name is not None:
             self.check_table_name()
 
@@ -44,15 +43,17 @@ class DBInit:
     # problem: sql injection
     # solution: add parameter for variables such as for WHERE statement
     def db_read(self, query: str):
-        cur = self.db.cursor()
+        db = sqlite3.connect(self.db_path)
+        cur = db.cursor()
         data = cur.execute(query).fetchall()
         cur.close()
         return data
 
     def db_write(self, query: str):
-        cur = self.db.cursor()
+        db = sqlite3.connect(self.db_path)
+        cur = db.cursor()
         cur.execute(query)
-        self.db.commit()
+        db.commit()
         cur.close()
 
 
@@ -64,8 +65,10 @@ class DBRead(DBInit):
         return db_data
 
     def check_col_name(self, col: str):
-        cur = self.db.execute(f"SELECT * FROM {self.table_name}")
-        col_names = [description for description in cur.description]
+        db = sqlite3.connect(self.db_path)
+        cur = db.execute(f"SELECT * FROM {self.table_name}")
+        col_names = [description[0] for description in cur.description]
+        db.close()
         if col not in col_names:
             raise ColNotFound
 
@@ -96,29 +99,13 @@ class DBWrite(DBInit):
         self.db_write(query)
 
     def db_insert(self, col_data: dict):
-
         cols = ', '.join(col_data.keys())
         values = ', '.join([f"'{value}'" for value in col_data.values()])
         query = f"INSERT INTO {self.table_name} ({cols}) VALUES ({values})"
         self.db_write(query)
-        # print(query)
 
 
 class DBMan(DBRead, DBWrite):
 
     def __init__(self):
         super().__init__()
-
-
-class test(DBMan):
-    db_path = "data.db"
-    table_name = "table_name"
-
-    def __init__(self):
-        print("starting...")
-        super().__init__()
-        self.db_insert({"col_1": "col_1 data_1", "col_2": "col_2 data_2"})
-
-
-if __name__ == "__main__":
-    test()
