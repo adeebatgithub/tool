@@ -5,8 +5,8 @@
 # Description : sqlite database manager
 ###################################################
 
-import sqlite3
 import os
+import sqlite3
 
 
 class TableNotFound(Exception):
@@ -27,19 +27,22 @@ class DBInit:
             self.check_db_path()
 
         self.db = sqlite3.connect(self.db_path)
-        self.check_table_name()
+        if self.table_name is not None:
+            self.check_table_name()
 
     def check_db_path(self):
         if not os.path.exists(self.db_path):
             raise FileNotFoundError
 
     def check_table_name(self):
-        query = "SELECT name FROM sqlite_master WHERE type='table';"
+        query = "SELECT name FROM sqlite_master WHERE type='table'"
         db_data = self.db_read(query)
         table_names = [x[0] for x in db_data]
         if self.table_name not in table_names:
             raise TableNotFound
 
+    # problem: sql injection
+    # solution: add parameter for variables such as for WHERE statement
     def db_read(self, query: str):
         cur = self.db.cursor()
         data = cur.execute(query).fetchall()
@@ -49,13 +52,11 @@ class DBInit:
     def db_write(self, query: str):
         cur = self.db.cursor()
         cur.execute(query)
+        self.db.commit()
         cur.close()
 
 
 class DBRead(DBInit):
-
-    def __init__(self):
-        super().__init__()
 
     def db_fetch_all(self):
         query = f" SELECT * FROM {self.table_name}"
@@ -69,7 +70,7 @@ class DBRead(DBInit):
             raise ColNotFound
 
     def db_fetch_col(self, col: str):
-        self.check_col_name()
+        self.check_col_name(col)
         query = f"SELECT {col} FROM {self.table_name}"
         db_data = self.db_read(query)
         return db_data
@@ -83,17 +84,24 @@ class DBRead(DBInit):
 
 class DBWrite(DBInit):
 
-    def __init__(self):
-        super().__init__()
-
-    def create_table(self, null=False, **table):
+    def create_table(self, table: dict[str, dict], null: bool = True):
         table_name, table_details_dict = table.popitem()
         table_details = ", ".join([f"{col} {data_type}" for col, data_type in table_details_dict.items()])
+
         if null:
             table_details = ", ".join([f"{col} {data_type} NOT NULL" for col, data_type in table_details_dict.items()])
+
         id_col = "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL"
-        query = f"CREATE TABLE {table_name} ({id_col}, {table_details}):"
-        print(query)
+        query = f"CREATE TABLE IF NOT EXISTS {table_name} ({id_col}, {table_details})"
+        self.db_write(query)
+
+    def db_insert(self, col_data: dict):
+
+        cols = ', '.join(col_data.keys())
+        values = ', '.join([f"'{value}'" for value in col_data.values()])
+        query = f"INSERT INTO {self.table_name} ({cols}) VALUES ({values})"
+        self.db_write(query)
+        # print(query)
 
 
 class DBMan(DBRead, DBWrite):
@@ -102,14 +110,14 @@ class DBMan(DBRead, DBWrite):
         super().__init__()
 
 
-class test(DBWrite):
+class test(DBMan):
     db_path = "data.db"
-    table_name = "Files"
+    table_name = "table_name"
 
     def __init__(self):
         print("starting...")
         super().__init__()
-        self.create_table(null=True, tabel_name={"col_1": "int", "col_2": "str"})
+        self.db_insert({"col_1": "col_1 data_1", "col_2": "col_2 data_2"})
 
 
 if __name__ == "__main__":
