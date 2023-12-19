@@ -17,6 +17,9 @@ class TableNotFound(Exception):
 class ColNotFound(Exception):
     pass
 
+class SizeNotPermitted(Exception):
+    pass
+
 
 class DBInit:
     db_path: str = "database.db"
@@ -87,15 +90,13 @@ class DBRead(DBInit):
 
 class DBWrite(DBInit):
 
-    def create_table(self, table: dict[str, dict], null: bool = True):
+    def create_table(self, table: dict[str, dict]):
         table_name, table_details_dict = table.popitem()
         table_details = ", ".join([f"{col} {data_type}" for col, data_type in table_details_dict.items()])
 
-        if null:
-            table_details = ", ".join([f"{col} {data_type} NOT NULL" for col, data_type in table_details_dict.items()])
-
-        id_col = "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL"
+        id_col = Fields.PrimaryKey()
         query = f"CREATE TABLE IF NOT EXISTS {table_name} ({id_col}, {table_details})"
+        print(query)
         self.db_write(query)
 
     def db_insert(self, col_data: dict):
@@ -106,6 +107,58 @@ class DBWrite(DBInit):
 
 
 class DBMan(DBRead, DBWrite):
+    pass
 
-    def __init__(self):
-        super().__init__()
+############ FIELDS ############
+
+class Fields:
+    
+    def PrimaryKey():
+        return "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL"
+        
+    def _check_size(data_type: str, size: int):
+        if size < 0:
+            raise SizeNotPermitted
+        
+        sizes = {
+            "CHAR": 255, 
+            "VARCHAR": 65535,
+            "TEXT": 65535,
+            "INT": 255,
+            "FLOAT": 255,
+        }
+        if size > sizes[data_type]:
+            raise SizeNotPermitted
+    
+    def _generate_field(data_type: str, size: int, null: bool):
+        Fields._check_size(data_type, size)
+        field = f"{data_type}"
+        if size != 0:
+            field += f"({size})"
+            
+        if null:
+            field += " NOT NULL"
+            
+        return field
+    
+    def CharField(size: int = 0, null: bool = True):
+        data_type = "CHAR"
+        return Fields._generate_field(data_type, size, null)
+        
+    def VarCharField(size: int = 0, null: bool = True):
+        data_type = "VARCHAR"
+        return Fields._generate_field(data_type, size, null)
+        
+    def TextField(size: int = 0, null: bool =True):
+        data_type = "TEXT"
+        return Fields._generate_field(data_type, size, null)
+        
+    def IntField(size: int = 0, null: bool = True):
+        data_type = "INT"
+        return Fields._generate_field(data_type, size, null)
+        
+    def FloatField(size: int = 0, null: bool = True):
+        data_type = "FLOAT"
+        return Fields._generate_field(data_type, size, null)
+        
+    
