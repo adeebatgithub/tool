@@ -5,11 +5,8 @@
 # Description  : YouTube video downloader
 ###################################################
 
-import os
 import re
 import sys
-from os.path import exists
-
 from pytube import YouTube
 
 from util import locio
@@ -21,7 +18,7 @@ class YouTuber:
     progress_bar = True
 
     @staticmethod
-    def display_progress_bar(
+    def _display_progress_bar_(
             bytes_received, filesize, ch: str = "█", scale: float = 0.55
     ):
 
@@ -36,14 +33,14 @@ class YouTuber:
         sys.stdout.write(text)
         sys.stdout.flush()
 
-    def on_progress(
+    def _on_progress_(
             self, stream, chunk, bytes_remaining
     ):
 
         self.file_size = self.set_res.filesize
 
         bytes_received = self.file_size - bytes_remaining
-        self.display_progress_bar(
+        self._display_progress_bar_(
             bytes_received, self.file_size)
 
     @staticmethod
@@ -57,18 +54,18 @@ class YouTuber:
 
         return bool(match)
 
-    def get_progess_bar(self):
+    def _get_progess_bar_(self):
 
         if self.progress_bar:
-            return self.on_progress
+            return self._on_progress_
         return None
 
     def get_video(self, url: str):
 
-        on_progress_callback = self.get_progess_bar()
+        on_progress_callback = self._get_progess_bar_()
         self.video = YouTube(
             url,
-            on_progress_callback = on_progress_callback
+            on_progress_callback=on_progress_callback
         )
         self.streams = self.video.streams
 

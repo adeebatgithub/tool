@@ -20,14 +20,21 @@ class TableNotFound(Exception):
 
 class ColNotFound(Exception):
     """
-    Raise Exception when the given column name not found while accessing database throught column name
+    Raise Exception when the given column name not found while accessing database through column name
     """
     pass
 
 
 class SizeNotPermitted(Exception):
     """
-    Raise Exception whaen the given size is not in the limit of the specified date type
+    Raise Exception when the given size is not in the limit of the specified date type
+    """
+    pass
+
+
+class DataNotFoundError(Exception):
+    """
+    Raise Exception when the query data is empty
     """
     pass
 
@@ -103,7 +110,7 @@ class DBInit:
     CLass which deal with initial processes
     Include common methods
     """
-    db_path: str = "database.db"
+    db_path: str = None
     table_name: str = None
 
     def __init__(self):
@@ -141,27 +148,38 @@ class DBInit:
 
 class DBRead(DBInit):
     """
-    Class which deals with reading data from the data base
+    Class which deals with reading data from the database
     """
 
-    def db_fetch_all(self):
-        query = f" SELECT * FROM {self.table_name}"
-        query_data = self._db_read_(query)
-        return query_data
-
-    def _check_col_name_(self, col_name: str):
+    def _get_col_name(self):
         db = sqlite3.connect(self.db_path)
         cur = db.execute(f"SELECT * FROM {self.table_name}")
         col_names = [description[0] for description in cur.description]
         db.close()
+        return col_names
+
+    def _check_col_name_(self, col_name: str):
+        col_names = self._get_col_name()
         if col_name not in col_names:
             raise ColNotFound(f"column '{col_name}' not found in '{self.table_name}' of '{self.db_path}'")
 
     @staticmethod
     def _data_to_list_(data: list[tuple]):
-        if len(data[0]) == 1:
-            return [x[0] for x in data]
-        return [x for x in data[0]]
+        return [x[0] for x in data]
+
+    def _data_to_dict_(self, data: list):
+        col_names = self._get_col_name()
+        if len(data) == 1:
+            return dict(zip(col_names, data[0]))
+        clean_data = []
+        for col in data:
+            clean_data.append(dict(zip(col_names, col)))
+        return clean_data
+
+    def db_fetch_all(self):
+        query = f" SELECT * FROM {self.table_name}"
+        query_data = self._db_read_(query)
+        return self._data_to_dict_(data=query_data)
 
     def db_fetch_col(self, col_name: str):
         self._check_col_name_(col_name)
@@ -172,22 +190,25 @@ class DBRead(DBInit):
 
     def db_fetch_row(self, **where):
         col, value = where.popitem()
+        self._check_col_name_(col_name=col)
         query = f"SELECT * FROM {self.table_name} WHERE {col} = ?"
         param = (value,)
         query_data = self._db_read_(query, param)
-        clean_data = DBRead._data_to_list_(query_data)
-        return clean_data
+        if not query_data:
+            raise DataNotFoundError(f"value not found: {col} = {value}")
+        return self._data_to_dict_(data=query_data)
 
 
 class DBWrite(DBInit):
     """
-    Class which deals with writing data to the data base
+    Class which deals with writing data to the database
     """
 
     def create_table(self, table: dict[str, dict]):
         """
         Use dbman.Fields for specifying data types
-        :param: {"table_name": {"col_name": "data type (dbman.Fields)",...}}
+        A pk column will add without providing
+        :param: table = {"table_name": {"col_name": "data type (dbman.Fields)",...}}
         """
         table_name, table_details_dict = table.popitem()
         table_details = ", ".join([f"{col} {data_type}" for col, data_type in table_details_dict.items()])
