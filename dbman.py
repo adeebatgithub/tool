@@ -9,7 +9,8 @@ import os
 import sqlite3
 
 
-# =============== Exception Handling ============= #
+# ============== Exception Handling ============= #
+
 class TableNotFound(Exception):
     """
     Raise Exception when database not found in the given path
@@ -31,7 +32,7 @@ class SizeNotPermitted(Exception):
     pass
 
 
-# ================ Field Date Types ============== #
+# =============== Field Date Types ============== #
 
 class Fields:
     """
@@ -95,7 +96,7 @@ class Fields:
         return Fields._generate_field(data_type, size, null)
 
 
-# ================================================= #
+# =============================================== #
 
 class DBInit:
     """
@@ -206,14 +207,3 @@ class DBMan(DBRead, DBWrite):
     For inheritance
     """
     pass
-
-
-# ===================== Testing =================== #
-
-class Test(DBMan):
-    pass
-
-
-if __name__ == "__main__":
-    test = Test()
-    test.__init__()
