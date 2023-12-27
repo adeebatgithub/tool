@@ -7,106 +7,105 @@
 
 from pyfiglet import figlet_format
 
-from Xltool import xltool
+from xltool import XlTool
 from Youtuber import YouTuber
-from util import locio, color
+from util import LocIO, Color
 
 
-class banners:
+class Banners:
 
+    @staticmethod
     def tool_bnr():
         head = figlet_format("TOOLS".center(31))
 
-        locio.clear()
-        locio.print_ln()
-        locio.print_ln()
+        LocIO.clear()
+        LocIO.print_ln()
+        LocIO.print_ln()
         print("")
-        print(f"{color.red}{head}{color.noc}")
-        locio.print_ln()
+        print(f"{Color.red}{head}{Color.noc}")
+        LocIO.print_ln()
         print("  version : 2.0", end="")
         print("By : Adeeb".rjust(39))
-        locio.print_ln()
+        LocIO.print_ln()
         print("")
 
+    @staticmethod
     def youtuber_bnr():
         txt = figlet_format("YOUTUBER".center(16))
 
-        locio.clear()
-        locio.print_ln()
-        locio.print_ln()
-        print(f"{color.red}{txt}{color.noc}")
-        locio.print_ln()
-        locio.print_ln()
+        LocIO.clear()
+        LocIO.print_ln()
+        LocIO.print_ln()
+        print(f"{Color.red}{txt}{Color.noc}")
+        LocIO.print_ln()
+        LocIO.print_ln()
         print()
 
+    @staticmethod
     def xltool_bnr():
         txt = figlet_format("XLTOOLS".center(24))
-        locio.clear()
-        locio.print_ln()
-        locio.print_ln()
+        LocIO.clear()
+        LocIO.print_ln()
+        LocIO.print_ln()
         print("")
-        locio.red(f"{txt}")
-        locio.print_ln()
-        locio.print_ln()
+        LocIO.red(f"{txt}")
+        LocIO.print_ln()
+        LocIO.print_ln()
         print()
 
 
-class tool(banners, YouTuber, xltool):
+class Tool:
 
-    def __init__(self):
+    @staticmethod
+    def downloader():
 
-        YouTuber.__init__(self)
-        xltool.__init__(self)
+        Banners.youtuber_bnr()
+        youtuber = YouTuber()
 
-        banners.tool_bnr()
+        url = LocIO.input_c("URL: ")
 
-    def downloader(self):
-
-        banners.youtuber_bnr()
-
-        url = locio.input_c("URL: ")
-
-        locio.green("checking url...")
-        is_url = YouTuber.check_url(url)
+        LocIO.green("checking url...")
+        is_url = youtuber.check_url(url)
         if is_url:
-            YouTuber.get_video(self, url)
+            youtuber.get_video(url)
         else:
-            locio.print_er("not a youtube url")
+            LocIO.print_er("not a youtube url")
             quit()
 
-        tags = YouTuber.get_res(self)
+        tags = youtuber.get_res()
 
-        print(f"{color.yellow}Available resolution : ", *tags)
+        print(f"{Color.yellow}Available resolution : ", *tags)
 
-        res = locio.input_c("Resolution: ")
+        res = LocIO.input_c("Resolution: ")
         tag = tags[res]
 
-        print(f"Downloading: {YouTuber.get_title(self)}")
-        YouTuber.download(self, tag)
+        print(f"Downloading: {youtuber.get_title()}")
+        youtuber.download(tag)
         print("\ndownloaded")
 
     def xl(self):
 
-        banners.xltool_bnr()
+        Banners.xltool_bnr()
+        xltool = XlTool()
 
-        path = locio.input_c("path or file name: ")
+        path = LocIO.input_c("path or file name: ")
 
         if len(path) == 0:
             quit()
 
-        xltool.file_inp(self, path)
+        xltool.file_inp(path)
 
-        xltool.get_sheet_name(self)
+        xltool.get_sheet_name()
 
-        sheet = locio.input_c("sheet name: ")
+        sheet = LocIO.input_c("sheet name: ")
 
-        xltool.sheet_inp(self, sheet)
+        xltool.sheet_inp(sheet)
 
         print()
         print(" [1] search")
         print(" [x] exit")
         print()
-        inp = locio.input_c(" select: ")
+        inp = LocIO.input_c(" select: ")
 
         if inp == "x":
             quit()
@@ -120,7 +119,7 @@ class tool(banners, YouTuber, xltool):
 
         else:
 
-            locio.print_er("Option not found")
+            LocIO.print_er("Option not found")
 
     def __call__(self):
 
@@ -128,7 +127,7 @@ class tool(banners, YouTuber, xltool):
         print(" [2] excel tools")
         print(" [x] exit")
         print()
-        inp = locio.input_c(" select: ")
+        inp = LocIO.input_c(" select: ")
 
         options = {
             "x": quit,
@@ -141,11 +140,11 @@ class tool(banners, YouTuber, xltool):
 
         else:
 
-            locio.print_er("Option not found")
+            LocIO.print_er("Option not found")
 
 
 ###################################################
 
 if __name__ == "__main__":
-    toolbox = tool()
+    toolbox = Tool()
     toolbox()

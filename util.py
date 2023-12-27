@@ -2,7 +2,7 @@ import os
 import sys
 
 
-class color:
+class Color:
     noc = "\033[0m"
     red = "\033[1;31m"
     green = "\033[1;32m"
@@ -11,46 +11,55 @@ class color:
     white = "\033[1;37m"
 
 
-class locio:
+class LocIO:
 
+    @staticmethod
     def print_ln():
 
-        print(f"{color.yellow}={color.noc}" * 56)
+        print(f"{Color.yellow}={Color.noc}" * 56)
 
+    @staticmethod
     def print_dln():
 
-        print(f"{color.yellow}-{color.noc}" * 56)
+        print(f"{Color.yellow}-{Color.noc}" * 56)
 
+    @staticmethod
     def print_er(e: str):
 
-        print(f"{color.red}[!] Error : {e} {color.noc}")
+        print(f"{Color.red}[!] Error : {e} {Color.noc}")
 
+    @staticmethod
     def red(txt: str):
 
-        print(f"{color.red}{txt} {color.noc}")
+        print(f"{Color.red}{txt} {Color.noc}")
 
+    @staticmethod
     def green(txt: str):
 
-        print(f"{color.green}{txt} {color.noc}")
+        print(f"{Color.green}{txt} {Color.noc}")
 
+    @staticmethod
     def yellow(txt: str):
 
-        print(f"{color.yellow}{txt} {color.noc}")
+        print(f"{Color.yellow}{txt} {Color.noc}")
 
+    @staticmethod
     def blue(txt: str):
 
-        print(f"{color.blue}{txt} {color.noc}")
+        print(f"{Color.blue}{txt} {Color.noc}")
 
+    @staticmethod
     def input_c(txt: str):
 
         try:
-            inp = input(f"{color.green}{txt}{color.noc}")
+            inp = input(f"{Color.green}{txt}{Color.noc}")
         except KeyboardInterrupt:
             print()
             quit()
 
         return inp
 
+    @staticmethod
     def clear():
 
         if sys.platform == "linux":

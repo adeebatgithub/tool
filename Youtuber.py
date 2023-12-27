@@ -9,7 +9,7 @@ import re
 import sys
 from pytube import YouTube
 
-from util import locio
+from util import LocIO
 
 
 class YouTuber:
@@ -144,14 +144,14 @@ if __name__ == "__main__":
         url = argv[argv.index("-u") + 1]
 
     else:
-        locio.print_er("url not provided ")
+        LocIO.print_er("url not provided ")
         quit()
     print("[*] checking url...")
     is_url = ytd.check_url(url)
     if is_url:
         ytd.get_video(url)
     else:
-        locio.print_er("not a youtube url")
+        LocIO.print_er("not a youtube url")
         quit()
 
     tags = ytd.get_res()
@@ -165,14 +165,14 @@ if __name__ == "__main__":
             quit()
 
         if res not in tags:
-            locio.print_er("[!] resolution not found")
+            LocIO.print_er("[!] resolution not found")
             quit()
 
         tag = tags[res]
 
     else:
         if "-aud" not in argv:
-            locio.print_er("[!] resolution is not provided ")
+            LocIO.print_er("[!] resolution is not provided ")
             quit()
 
         tag = max(tags)

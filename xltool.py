@@ -10,10 +10,10 @@ import sys
 from os.path import exists
 
 import openpyxl
-from util import locio
+from util import LocIO
 
 
-class file_handle:
+class XlFileHandle:
 
     def __init__(self):
 
@@ -68,7 +68,7 @@ class file_handle:
         self.book.close()
 
 
-class dupe:
+class XlDupe:
 
     def __init__(self, sheet):
 
@@ -131,7 +131,7 @@ class dupe:
         return dupe_lst
 
 
-class print_sheet:
+class XlPrintSheet:
 
     def __init__(self, sheet):
 
@@ -206,10 +206,10 @@ class print_sheet:
                     print("\033[0;33m" + str(head) + "\033[0m :" + str(value).strip(), end=", ")
                 print("}")
         else:
-            locio.print_er("can't find headers")
+            LocIO.print_er("can't find headers")
 
 
-class remove:
+class XlRemove:
 
     def __init__(self, sheet):
 
@@ -246,7 +246,7 @@ class remove:
         print()
 
 
-class search:
+class XlSearch:
 
     def __init__(self, content, txt, headers):
 
@@ -292,11 +292,11 @@ class search:
                     print("}")
 
 
-class main(file_handle, dupe, print_sheet, remove, search):
+class Main(XlFileHandle, XlDupe, XlPrintSheet, XlRemove, XlSearch):
 
     def __init__(self, argv):
 
-        file_handle.__init__(self)
+        XlFileHandle.__init__(self)
 
         self.argv = argv
 
@@ -309,24 +309,24 @@ class main(file_handle, dupe, print_sheet, remove, search):
             print("[!] file not provided ")
             quit()
 
-        file_handle.file_inp(self, path)
+        XlFileHandle.file_inp(self, path)
 
         if "-s" in argv:
             sheet_name = argv[argv.index("-s") + 1]
             if sheet_name == "SN":
-                file_handle.get_sheet_name(self)
+                XlFileHandle.get_sheet_name(self)
                 quit()
         else:
             print("[!] sheet not provided ")
             quit()
 
-        file_handle.sheet_inp(self, sheet_name)
+        XlFileHandle.sheet_inp(self, sheet_name)
 
     def dupe_tool(self):
 
         argv = self.argv
 
-        dupe.__init__(self, self.sheet)
+        XlDupe.__init__(self, self.sheet)
 
         try:
             condition = argv[argv.index("-d") + 1]
@@ -335,8 +335,8 @@ class main(file_handle, dupe, print_sheet, remove, search):
             head = "def"
 
         conditions = {
-            "H": dupe.by_header,
-            "C": dupe.by_col,
+            "H": XlDupe.by_header,
+            "C": XlDupe.by_col,
         }
 
         if head in conditions:
@@ -346,7 +346,7 @@ class main(file_handle, dupe, print_sheet, remove, search):
 
         else:
 
-            dupe.full_row(self)
+            XlDupe.full_row(self)
 
     def display(self):
 
@@ -358,10 +358,10 @@ class main(file_handle, dupe, print_sheet, remove, search):
             mode = "def"
 
         modes = {
-            "json": print_sheet.json,
-            "def": print_sheet.json,
-            "table": print_sheet.table,
-            "list": print_sheet.lst,
+            "json": XlPrintSheet.json,
+            "def": XlPrintSheet.json,
+            "table": XlPrintSheet.table,
+            "list": XlPrintSheet.lst,
         }
 
         if mode in modes:
@@ -374,8 +374,8 @@ class main(file_handle, dupe, print_sheet, remove, search):
     def get_dupe_lst(self, condition):
 
         conditions = {
-            "H": dupe.by_header,
-            "C": dupe.by_col,
+            "H": XlDupe.by_header,
+            "C": XlDupe.by_col,
         }
 
         head = condition.split("=")[0]
@@ -385,17 +385,17 @@ class main(file_handle, dupe, print_sheet, remove, search):
             dupe_lst = conditions[head](self, param)
 
         else:
-            return dupe.full_row(self)
+            return XlDupe.full_row(self)
 
         return dupe_lst
 
     def remove_tool(self):
 
         argv = self.argv
-        remove.__init__(self, self.sheet)
+        XlRemove.__init__(self, self.sheet)
 
         if "-rb" in argv:
-            remove.blank(self)
+            XlRemove.blank(self)
 
         if "-rd" in argv:
 
@@ -405,7 +405,7 @@ class main(file_handle, dupe, print_sheet, remove, search):
                 condition = "def"
             dupe_lst = self.get_dupe_lst(condition)
 
-            remove.dupe(self, dupe_lst)
+            XlRemove.dupe(self, dupe_lst)
 
     def search_tool(self):
         try:
@@ -414,8 +414,8 @@ class main(file_handle, dupe, print_sheet, remove, search):
             print("[!] Err: Text not provided ")
             quit()
 
-        header, _ = print_sheet.headers(self)
-        search.__init__(self, self.content_dict, txt, header)
+        header, _ = XlPrintSheet.headers(self)
+        XlSearch.__init__(self, self.content_dict, txt, header)
 
         try:
             condition = self.argv[self.argv.index("-f") + 2]
@@ -424,21 +424,21 @@ class main(file_handle, dupe, print_sheet, remove, search):
 
         if "H" in condition:
             param = condition.split("=")[1]
-            search.by_header(self, param)
+            XlSearch.by_header(self, param)
 
         if "C" in condition:
 
             param = condition.split("=")[1]
-            search.by_col(self, self.sheet, param)
+            XlSearch.by_col(self, self.sheet, param)
 
         else:
 
-            search.full(self)
+            XlSearch.full(self)
 
     def __call__(self):
 
         self.file_init()
-        print_sheet.__init__(self, self.sheet)
+        XlPrintSheet.__init__(self, self.sheet)
         argv = self.argv
 
         if "-d" in argv:
@@ -448,7 +448,7 @@ class main(file_handle, dupe, print_sheet, remove, search):
             self.remove_tool()
 
         if "-o" in argv:
-            file_handle.save_file(self)
+            XlFileHandle.save_file(self)
 
         if "-f" in argv:
             self.search_tool()
@@ -457,22 +457,22 @@ class main(file_handle, dupe, print_sheet, remove, search):
             self.display()
 
 
-class xltool(file_handle, print_sheet, remove, search):
+class XlTool(XlFileHandle, XlPrintSheet, XlRemove, XlSearch):
 
     def __init__(self):
-        file_handle.__init__(self)
+        XlFileHandle.__init__(self)
 
     def find(self):
-        print_sheet.__init__(self, self.sheet)
+        XlPrintSheet.__init__(self, self.sheet)
 
         txt = input("content: ")
         print()
-        header, _ = print_sheet.headers(self)
-        search.__init__(self, self.content_dict, txt, header)
+        header, _ = XlPrintSheet.headers(self)
+        XlSearch.__init__(self, self.content_dict, txt, header)
 
-        search.full(self)
+        XlSearch.full(self)
 
 
 if __name__ == "__main__":
-    tool = main(sys.argv)
+    tool = Main(sys.argv)
     tool()
